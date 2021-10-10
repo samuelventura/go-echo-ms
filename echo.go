@@ -10,6 +10,7 @@ import (
 
 func echo(node tree.Node) error {
 	endpoint := node.GetValue("endpoint").(string)
+	errors := node.GetValue("errors").(bool)
 	listen, err := net.Listen("tcp", endpoint)
 	if err != nil {
 		return err
@@ -20,11 +21,13 @@ func echo(node tree.Node) error {
 	node.SetValue("port", port)
 	node.Go("listen", func() {
 		defer node.Close()
-		id := NewId("echo-" + listen.Addr().String())
+		id := NewId("echo")
 		for {
 			conn, err := listen.Accept()
 			if err != nil {
-				log.Println(err)
+				if errors {
+					log.Println(err)
+				}
 				return
 			}
 			addr := conn.RemoteAddr().String()
@@ -35,7 +38,11 @@ func echo(node tree.Node) error {
 				continue
 			}
 			child.AddCloser("conn", conn.Close)
-			go handleConnection(child, conn)
+			log.Println("open", addr)
+			go func() {
+				defer log.Println("close", addr)
+				handleConnection(child, conn)
+			}()
 		}
 	})
 	return nil
@@ -43,6 +50,7 @@ func echo(node tree.Node) error {
 
 func handleConnection(node tree.Node, conn net.Conn) {
 	defer node.Close()
+	errors := node.GetValue("errors").(bool)
 	err := keepAlive(conn)
 	if err != nil {
 		log.Println(err)
@@ -52,14 +60,18 @@ func handleConnection(node tree.Node, conn net.Conn) {
 		defer node.Close()
 		_, err := io.Copy(conn, conn)
 		if err != nil {
-			log.Println(node.Name(), err)
+			if errors {
+				log.Println(err)
+			}
 		}
 	})
 	node.Go("copy2", func() {
 		defer node.Close()
 		_, err := io.Copy(conn, conn)
 		if err != nil {
-			log.Println(node.Name(), err)
+			if errors {
+				log.Println(err)
+			}
 		}
 	})
 	<-node.Closed()

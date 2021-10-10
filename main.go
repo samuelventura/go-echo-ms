@@ -17,7 +17,8 @@ func main() {
 	ctrlc := make(chan os.Signal, 1)
 	signal.Notify(ctrlc, os.Interrupt)
 
-	log.Println(os.Getpid(), "starting...")
+	log.Println("starting...")
+	log.Println("pid", os.Getpid())
 	defer log.Println("exit")
 	node := root()
 	defer node.WaitDisposed()
@@ -45,6 +46,7 @@ func main() {
 func root() tree.Node {
 	node := tree.NewRoot(nil)
 	node.SetValue("endpoint", getenv("ECHO_ENDPOINT", "127.0.0.1:31653"))
+	node.SetValue("errors", getenv("ECHO_ERRORS", "false") != "false")
 	return node
 }
 
