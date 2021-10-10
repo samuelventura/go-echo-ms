@@ -46,7 +46,7 @@ func main() {
 func root() tree.Node {
 	node := tree.NewRoot(nil)
 	node.SetValue("endpoint", getenv("ECHO_ENDPOINT", "127.0.0.1:31653"))
-	node.SetValue("errors", getenv("ECHO_ERRORS", "false") != "false")
+	node.SetValue("errors", getenv("ECHO_ERRORS", "false") == "true")
 	return node
 }
 
