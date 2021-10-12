@@ -2,32 +2,29 @@ package main
 
 import (
 	"io"
-	"log"
 	"net"
 
+	"github.com/samuelventura/go-state"
 	"github.com/samuelventura/go-tree"
 )
 
 func echo(node tree.Node) error {
 	endpoint := node.GetValue("endpoint").(string)
-	errors := node.GetValue("errors").(bool)
+	log := node.GetValue("log").(*state.Log)
 	listen, err := net.Listen("tcp", endpoint)
 	if err != nil {
 		return err
 	}
 	node.AddCloser("listen", listen.Close)
 	port := listen.Addr().(*net.TCPAddr).Port
-	log.Println("port", port)
+	log.Info("port", port)
 	node.SetValue("port", port)
-	node.Go("listen", func() {
-		defer node.Close()
+	node.AddProcess("listen", func() {
 		id := NewId("echo")
 		for {
 			conn, err := listen.Accept()
 			if err != nil {
-				if errors {
-					log.Println(err)
-				}
+				log.Warn(err)
 				return
 			}
 			addr := conn.RemoteAddr().String()
@@ -38,9 +35,10 @@ func echo(node tree.Node) error {
 				continue
 			}
 			child.AddCloser("conn", conn.Close)
-			log.Println("open", addr)
+			log.Info("open", addr)
 			go func() {
-				defer log.Println("close", addr)
+				defer log.Info("close", addr)
+				defer child.Recover()
 				handleConnection(child, conn)
 			}()
 		}
@@ -49,30 +47,23 @@ func echo(node tree.Node) error {
 }
 
 func handleConnection(node tree.Node, conn net.Conn) {
-	defer node.Close()
-	errors := node.GetValue("errors").(bool)
+	log := node.GetValue("log").(*state.Log)
 	err := keepAlive(conn)
 	if err != nil {
-		log.Println(err)
+		log.Warn(err)
 		return
 	}
-	node.Go("copy1", func() {
-		defer node.Close()
+	node.AddProcess("copy1", func() {
 		_, err := io.Copy(conn, conn)
 		if err != nil {
-			if errors {
-				log.Println(err)
-			}
+			log.Warn(err)
 		}
 	})
-	node.Go("copy2", func() {
-		defer node.Close()
+	node.AddProcess("copy2", func() {
 		_, err := io.Copy(conn, conn)
 		if err != nil {
-			if errors {
-				log.Println(err)
-			}
+			log.Warn(err)
 		}
 	})
-	<-node.Closed()
+	node.WaitClosed()
 }

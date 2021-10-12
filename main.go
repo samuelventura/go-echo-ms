@@ -1,55 +1,46 @@
 package main
 
 import (
-	"io/ioutil"
-	"log"
-	"os"
-	"os/signal"
-
+	"github.com/samuelventura/go-state"
 	"github.com/samuelventura/go-tree"
 )
 
 func main() {
-	os.Setenv("GOTRACEBACK", "all")
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	log.SetOutput(os.Stdout)
+	run(func(root tree.Node) {
+		enode := root.AddChild("echo")
+		snode := root.AddChild("state")
+		if enode == nil || snode == nil {
+			return //root already closed
+		}
 
-	ctrlc := make(chan os.Signal, 1)
-	signal.Notify(ctrlc, os.Interrupt)
+		log := root.GetValue("log").(*state.Log)
+		endpoint := getenv("ECHO_ENDPOINT", "127.0.0.1:31653")
+		log.Info("endpoint", endpoint)
 
-	log.Println("starting...")
-	log.Println("pid", os.Getpid())
-	defer log.Println("exit")
-	node := root()
-	defer node.WaitDisposed()
-	defer node.Close()
-	err := run(node)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	stdin := make(chan interface{})
-	go func() {
-		defer close(stdin)
-		ioutil.ReadAll(os.Stdin)
-	}()
-	select {
-	case <-node.Closed():
-		log.Println("root closed")
-	case <-ctrlc:
-		log.Println("ctrlc interrupt")
-	case <-stdin:
-		log.Println("stdin closed")
-	}
-}
-
-func root() tree.Node {
-	node := tree.NewRoot(nil)
-	node.SetValue("endpoint", getenv("ECHO_ENDPOINT", "127.0.0.1:31653"))
-	node.SetValue("errors", getenv("ECHO_ERRORS", "false") == "true")
-	return node
-}
-
-func run(node tree.Node) error {
-	return echo(node)
+		enode.AddAction("root", root.Close)
+		enode.SetValue("endpoint", endpoint)
+		err := echo(enode) //async
+		if err != nil {
+			root.Close()
+			log.Warn(err)
+			return
+		}
+		path := state.SingletonPath("/tmp")
+		log.Info("path", path)
+		mux := state.NewMux()
+		state.AddPProfHandlers(mux)
+		state.AddNodeHandlers(mux, root)
+		state.AddNodeHandlers(mux, enode)
+		state.AddNodeHandlers(mux, snode)
+		state.AddEnvironHandlers(mux)
+		snode.AddAction("root", root.Close)
+		snode.SetValue("mux", mux)
+		snode.SetValue("path", path)
+		err = state.Serve(snode) //async
+		if err != nil {
+			root.Close()
+			log.Warn(err)
+			return
+		}
+	})
 }
