@@ -5,8 +5,8 @@ go 1.17
 require (
 	github.com/felixge/tcpkeepalive v0.0.0-20160804073959-5bb0b2dea91e
 	github.com/kardianos/service v1.2.0
-	github.com/samuelventura/go-state v0.0.0-20211012060954-d038b9180d7e
-	github.com/samuelventura/go-tree v0.0.0-20211012022214-4277529f6bac
+	github.com/samuelventura/go-state v0.0.0-20211013044553-4bd06dd71de3
+	github.com/samuelventura/go-tree v0.0.0-20211013044031-aa973f171333
 )
 
 require (

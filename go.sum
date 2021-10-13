@@ -9,8 +9,12 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/samuelventura/go-state v0.0.0-20211012060954-d038b9180d7e h1:+GCNCChPtWSqr8LCa8AqCs9/qXsO4wuykdFi753t8IU=
 github.com/samuelventura/go-state v0.0.0-20211012060954-d038b9180d7e/go.mod h1:0U9Rme/vhEaa9Yab6ZQK9Xb5kXq6O1tIT0ImEZjOqDg=
+github.com/samuelventura/go-state v0.0.0-20211013044553-4bd06dd71de3 h1:r8+UOAwk9DWw9u5k/j1I4+ZI49QbMuCF2Pyak6GYZo0=
+github.com/samuelventura/go-state v0.0.0-20211013044553-4bd06dd71de3/go.mod h1:2RGag1eaxqlGuktGmeaRrrooSk7hXiLilBMBaqF8XHM=
 github.com/samuelventura/go-tree v0.0.0-20211012022214-4277529f6bac h1:m2M0b/jSTPRKOOVyut/MFvNXcoL29qaKNxuOAcckhPU=
 github.com/samuelventura/go-tree v0.0.0-20211012022214-4277529f6bac/go.mod h1:IRxqXlA+huNY8Dd+AX6v2r050IcwmRYnWr7jgbeg87E=
+github.com/samuelventura/go-tree v0.0.0-20211013044031-aa973f171333 h1:gpJwIQ0yclGQA99NplxvLEc7U8vMs+m4+cSo+pCXBkI=
+github.com/samuelventura/go-tree v0.0.0-20211013044031-aa973f171333/go.mod h1:IRxqXlA+huNY8Dd+AX6v2r050IcwmRYnWr7jgbeg87E=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=

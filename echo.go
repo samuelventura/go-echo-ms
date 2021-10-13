@@ -34,13 +34,12 @@ func echo(node tree.Node) error {
 				conn.Close()
 				continue
 			}
-			child.AddCloser("conn", conn.Close)
 			log.Info("open", addr)
-			go func() {
+			child.AddCloser("conn", conn.Close)
+			child.AddProcess("loop", func() {
 				defer log.Info("close", addr)
-				defer child.Recover()
 				handleConnection(child, conn)
-			}()
+			})
 		}
 	})
 	return nil
