@@ -8,7 +8,7 @@ if [[ "$OSTYPE" == "linux"* ]]; then
     go install
     curl -X POST http://127.0.0.1:31600/api/daemon/stop/$DAEMON
     curl -X POST http://127.0.0.1:31600/api/daemon/uninstall/$DAEMON
-    sudo cp $SRC/$BIN $DST
+    sudo cp $SRC/$BINARY $DST
     curl -X POST http://127.0.0.1:31600/api/daemon/install/$DAEMON?path=$DST/$BINARY
     curl -X POST http://127.0.0.1:31600/api/daemon/enable/$DAEMON
     curl -X POST http://127.0.0.1:31600/api/daemon/start/$DAEMON
