@@ -1,46 +1,54 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
+	"os"
+	"os/signal"
+
 	"github.com/samuelventura/go-state"
 	"github.com/samuelventura/go-tree"
 )
 
 func main() {
-	run(func(root tree.Node) {
-		enode := root.AddChild("echo")
-		snode := root.AddChild("state")
-		if enode == nil || snode == nil {
-			return //root already closed
-		}
+	os.Setenv("GOTRACEBACK", "all")
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	log.SetOutput(os.Stdout)
 
-		log := root.GetValue("log").(*state.Log)
-		endpoint := getenv("ECHO_ENDPOINT", "127.0.0.1:31653")
-		log.Info("endpoint", endpoint)
+	ctrlc := make(chan os.Signal, 1)
+	signal.Notify(ctrlc, os.Interrupt)
 
-		enode.AddAction("root", root.Close)
-		enode.SetValue("endpoint", endpoint)
-		err := echo(enode) //async
-		if err != nil {
-			root.Close()
-			log.Warn(err)
-			return
-		}
-		path := state.SingletonPath("/tmp")
-		log.Info("path", path)
-		mux := state.NewMux()
-		state.AddPProfHandlers(mux)
-		state.AddNodeHandlers(mux, root)
-		state.AddNodeHandlers(mux, enode)
-		state.AddNodeHandlers(mux, snode)
-		state.AddEnvironHandlers(mux)
-		snode.AddAction("root", root.Close)
-		snode.SetValue("mux", mux)
-		snode.SetValue("path", path)
-		err = state.Serve(snode) //async
-		if err != nil {
-			root.Close()
-			log.Warn(err)
-			return
-		}
-	})
+	log.Println("start", os.Getpid())
+	defer log.Println("exit")
+
+	rlog := tree.NewLog()
+	rnode := tree.NewRoot("root", rlog)
+	defer rnode.WaitDisposed()
+	//recover closes as well
+	defer rnode.Recover()
+
+	spath := state.SingletonPath()
+	snode := state.Serve(rnode, spath)
+	defer snode.WaitDisposed()
+	defer snode.Close()
+	log.Println("socket", spath)
+
+	anode := rnode.AddChild("api")
+	defer anode.WaitDisposed()
+	defer anode.Close()
+	anode.SetValue("endpoint", getenv("ECHO_ENDPOINT", "127.0.0.1:31607"))
+	echo(anode)
+
+	stdin := make(chan interface{})
+	go func() {
+		defer close(stdin)
+		ioutil.ReadAll(os.Stdin)
+	}()
+	select {
+	case <-rnode.Closed():
+	case <-snode.Closed():
+	case <-anode.Closed():
+	case <-ctrlc:
+	case <-stdin:
+	}
 }
