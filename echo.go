@@ -29,10 +29,6 @@ func echo(node tree.Node) {
 			addr := conn.RemoteAddr().String()
 			cid := id.Next(addr)
 			child := node.AddChild(cid)
-			if child == nil {
-				conn.Close()
-				continue
-			}
 			log.Println("open", addr)
 			child.AddCloser("conn", conn.Close)
 			child.AddProcess("loop", func() {

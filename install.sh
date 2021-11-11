@@ -2,7 +2,7 @@
 
 if [[ "$OSTYPE" == "linux"* ]]; then
     DAEMON=echo
-    BINARY=go-echo-ms
+    BINARY=go-$DAEMON-ms
     SRC=$HOME/go/bin
     DST=/usr/local/bin
     go install

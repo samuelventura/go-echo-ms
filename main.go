@@ -21,8 +21,7 @@ func main() {
 	log.Println("start", os.Getpid())
 	defer log.Println("exit")
 
-	rlog := tree.NewLog()
-	rnode := tree.NewRoot("root", rlog)
+	rnode := tree.NewRoot("root", log.Println)
 	defer rnode.WaitDisposed()
 	//recover closes as well
 	defer rnode.Recover()
