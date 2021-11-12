@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/felixge/tcpkeepalive v0.0.0-20160804073959-5bb0b2dea91e
-	github.com/samuelventura/go-state v0.1.1-0.20211111191711-4255471006a4
-	github.com/samuelventura/go-tree v0.1.1-0.20211111191431-a42fa947d0d9
+	github.com/samuelventura/go-state v0.1.1-0.20211112004156-59e1c7c09c44
+	github.com/samuelventura/go-tree v0.1.1-0.20211112004052-bed2a01c611d
 )
 
 require (

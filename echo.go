@@ -26,6 +26,7 @@ func echo(node tree.Node) {
 				log.Fatal(err)
 				return
 			}
+			node.IfRecoverCloser(conn.Close)
 			addr := conn.RemoteAddr().String()
 			cid := id.Next(addr)
 			child := node.AddChild(cid)
@@ -40,11 +41,7 @@ func echo(node tree.Node) {
 }
 
 func handleConnection(node tree.Node, conn net.Conn) {
-	err := keepAlive(conn)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	keepAlive(conn)
 	node.AddProcess("copy1", func() {
 		_, err := io.Copy(conn, conn)
 		if err != nil {
